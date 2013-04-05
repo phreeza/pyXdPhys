@@ -52,11 +52,12 @@ class Stimulation:
         self.stim = self._str_list_conv(data_stim)
         self.depvar = np.array(depvar)
         self.params = params
-        print params
         self.times = np.arange(0.,float(self.traces.shape[1]))/(
                 float(self.traces.shape[1]))*self.params['Epoch']
         if self.params['depvar'] == 'itd (us)':
             self.freqs = self.depvar.copy().fill(self.params['itd.stim'])
+            #spontaneous stimulations get marked by -6666
+            self.freqs[np.where(self.depvar < -6000)] = -6666
         if self.params['depvar'] == 'bf (Hz)':
             self.freqs = self.depvar
 
