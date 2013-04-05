@@ -17,20 +17,21 @@ class Stimulation:
         depvar = []
         params = dict()
         for lin in lines:
-            if lin == 'STIMULUS\n':
+            lin = lin.strip()
+            if lin == 'STIMULUS':
                 inside_stimulus = True
-            if lin == 'END_STIMULUS\n':
+            if lin == 'END_STIMULUS':
                 if inside_stimulus:
                     data_stim.append([])
                 inside_stimulus = False
-            if lin == 'TRACE\n':
+            if lin == 'TRACE':
                 inside_trace = True
-            if lin == 'END_TRACE\n':
+            if lin == 'END_TRACE':
                 inside_trace = False
                 data_trace.append([])
-            if lin == 'PARAMS\n':
+            if lin == 'PARAMS':
                 inside_params = True
-            if lin == 'END_PARAMS\n':
+            if lin == 'END_PARAMS':
                 inside_params = False
             if inside_params and lin.find('=')>0 and lin[0]!=';':
                 p = lin[lin.find('=')+1:].strip()
@@ -51,6 +52,7 @@ class Stimulation:
         self.stim = self._str_list_conv(data_stim)
         self.depvar = np.array(depvar)
         self.params = params
+        print params
         self.times = np.arange(0.,float(self.traces.shape[1]))/(
                 float(self.traces.shape[1]))*self.params['Epoch']
         if self.params['depvar'] == 'itd (us)':
@@ -63,7 +65,7 @@ class Stimulation:
     def _str_list_conv(self,str_list):
         ret = []
         for tra in str_list:
-            if len(tra)>0 and tra[1] == 'channel=1\n':
+            if len(tra)>0 and tra[1] == 'channel=1':
                 ret.append([])
                 for lin in tra[2:]:
                     for n in range(len(lin)/4):
