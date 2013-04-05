@@ -51,16 +51,24 @@ class Stimulation:
         self.stim = self._str_list_conv(data_stim)
         self.depvar = np.array(depvar)
         self.params = params
+        self.times = np.arange(0.,float(self.traces.shape[1]))/(
+                float(self.traces.shape[1]))*self.params['Epoch']
+        if self.params['depvar'] == 'itd (us)':
+            self.freqs = self.depvar.copy().fill(self.params['itd.stim'])
+        if self.params['depvar'] == 'bf (Hz)':
+            self.freqs = self.depvar
+
 
 
     def _str_list_conv(self,str_list):
         ret = []
         for tra in str_list:
-            ret.append([])
-            for lin in tra[2:]:
-                for n in range(len(lin)/4):
-                    ret[-1].append(int(lin[4*n:4*(n+1)],16))
-        ret = np.array(ret[:-1])
+            if len(tra)>0 and tra[1] == 'channel=1\n':
+                ret.append([])
+                for lin in tra[2:]:
+                    for n in range(len(lin)/4):
+                        ret[-1].append(int(lin[4*n:4*(n+1)],16))
+        ret = np.array(ret)
         return ret - (ret > 32767)*65536
 
     def depvar_sort(self):
@@ -70,3 +78,4 @@ class Stimulation:
         if len(self.stim) == len(self.depvar):
             self.stim = self.stim[ind,:]
         self.traces = self.traces[ind,:]
+        self.freqs = self.freqs[ind,:]
