@@ -54,8 +54,18 @@ class Stimulation:
         self.params = params
         self.times = np.arange(0.,float(self.traces.shape[1]))/(
                 float(self.traces.shape[1]))*self.params['Epoch']
+        self.clickfile = False
         if self.params['depvar'] == 'itd (us)':
-            self.freqs = self.depvar.copy().fill(self.params['itd.stim'])
+            self.freqs = self.depvar.copy()
+            if ('itd.stim' not in self.params.keys()
+                    and self.params['prefs.page'] == 3):
+                self.freqs.fill(0.)
+                self.clickfile = True
+            elif self.params['itd.stim']=='BB':
+                #noise stimulation. TODO: figure out what the ts parameters mean
+                self.freqs.fill(0.)
+            else:
+                self.freqs.fill(self.params['itd.stim'])
             #spontaneous stimulations get marked by -6666
             self.freqs[np.where(self.depvar < -6000)] = -6666
         if self.params['depvar'] == 'bf (Hz)':
