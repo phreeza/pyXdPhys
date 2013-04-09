@@ -52,13 +52,15 @@ class Stimulation:
         self.stim = self._str_list_conv(data_stim)
         self.depvar = np.array(depvar)
         self.params = params
-        self.times = np.arange(0.,float(self.traces.shape[1]))/(
-                float(self.traces.shape[1]))*self.params['Epoch']
+        if len(self.traces) > 0:
+            self.times = np.arange(0.,float(self.traces.shape[1]))/(
+                    float(self.traces.shape[1]))*self.params['Epoch']
+        else: self.times = None
         self.clickfile = False
         if self.params['depvar'] == 'itd (us)':
             self.freqs = self.depvar.copy()
             if ('itd.stim' not in self.params.keys()
-                    and self.params['prefs.page'] == 3):
+                    and self.params['prefs.page'+str(self.params['prefs.page'])] == 'click'):
                 self.freqs.fill(0.)
                 self.clickfile = True
             elif self.params['itd.stim']=='BB':
@@ -90,5 +92,6 @@ class Stimulation:
         #not all files contain the stimulus
         if len(self.stim) == len(self.depvar):
             self.stim = self.stim[ind,:]
-        self.traces = self.traces[ind,:]
+        if len(self.traces) == len(self.depvar):
+            self.traces = self.traces[ind,:]
         self.freqs = self.freqs[ind,:]
