@@ -73,6 +73,12 @@ class Stimulation:
         if self.params['depvar'] == 'bf (Hz)':
             self.freqs = self.depvar
 
+        #parse the timestamp as a python datetime if present
+        if 'timestamp' in self.params.keys():
+            from datetime import datetime
+            self.timestamp = datetime.fromtimestamp(
+                    self.params['timestamp'])
+
 
 
     def _str_list_conv(self,str_list):
