@@ -57,12 +57,15 @@ class Stimulation:
                     float(self.traces.shape[1]))*self.params['Epoch']
         else: self.times = None
         self.clickfile = False
+        self.longnoise = False
         if self.params['depvar'] == 'itd (us)':
             self.freqs = self.depvar.copy()
-            if ('itd.stim' not in self.params.keys()
-                    and self.params['prefs.page'+str(self.params['prefs.page'])] == 'click'):
+            if ('itd.stim' not in self.params.keys()):
                 self.freqs.fill(0.)
-                self.clickfile = True
+                if (self.params['prefs.page'+str(self.params['prefs.page'])] == 'click'):
+                    self.clickfile = True
+                if (self.params['prefs.page'+str(self.params['prefs.page'])] == 'longnoise'):
+                    self.longnoise = True
             elif self.params['itd.stim']=='BB':
                 #noise stimulation. TODO: figure out what the ts parameters mean
                 self.freqs.fill(0.)
