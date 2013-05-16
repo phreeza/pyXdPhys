@@ -7,7 +7,11 @@ class Stimulation:
             self.depvar_sort()
 
     def load_data(self,fname):
-        fid = open(fname)
+        if fname[-3:] == '.gz':
+            import gzip
+            fid = gzip.open(fname,'r')
+        else:
+            fid = open(fname)
         lines = fid.readlines()
         data_trace = [[]]
         data_stim = [[]]
@@ -24,11 +28,23 @@ class Stimulation:
                 if inside_stimulus:
                     data_stim.append([])
                 inside_stimulus = False
+
+            #explicit trace delimiter style found in xdphys 2.8.1-1 files
             if lin == 'TRACE':
                 inside_trace = True
             if lin == 'END_TRACE':
                 inside_trace = False
                 data_trace.append([])
+
+            #implicit delimiter style found in xdphys 2.47 files
+            if len(lin)==80:
+                inside_trace = True
+            if lin[0:6] == 'depvar':
+                inside_trace = False
+                data_trace.append([])
+            if lin == 'END_RASTERDATA':
+                inside_trace = False
+
             if lin == 'PARAMS':
                 inside_params = True
             if lin == 'END_PARAMS':
@@ -62,10 +78,11 @@ class Stimulation:
             self.freqs = self.depvar.copy()
             if ('itd.stim' not in self.params.keys()):
                 self.freqs.fill(0.)
-                if (self.params['prefs.page'+str(self.params['prefs.page'])] == 'click'):
-                    self.clickfile = True
-                if (self.params['prefs.page'+str(self.params['prefs.page'])] == 'longnoise'):
-                    self.longnoise = True
+                if 'prefs.page' in self.params.keys():
+                    if (self.params['prefs.page'+str(self.params['prefs.page'])] == 'click'):
+                        self.clickfile = True
+                    if (self.params['prefs.page'+str(self.params['prefs.page'])] == 'longnoise'):
+                        self.longnoise = True
             elif self.params['itd.stim']=='BB':
                 #noise stimulation. TODO: figure out what the ts parameters mean
                 self.freqs.fill(0.)
@@ -85,13 +102,18 @@ class Stimulation:
 
 
     def _str_list_conv(self,str_list):
+        def parse(lines):
+            nums = []
+            for lin in lines:
+                for n in range(len(lin)/4):
+                    nums.append(int(lin[4*n:4*(n+1)],16))
+            return nums
         ret = []
         for tra in str_list:
             if len(tra)>0 and tra[1] == 'channel=1':
-                ret.append([])
-                for lin in tra[2:]:
-                    for n in range(len(lin)/4):
-                        ret[-1].append(int(lin[4*n:4*(n+1)],16))
+                ret.append(parse(tra[2:]))
+            if len(tra)>0 and len(tra[1])==80:
+                ret.append(parse(tra))
         ret = np.array(ret)
         return ret - (ret > 32767)*65536
 
