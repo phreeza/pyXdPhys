@@ -37,13 +37,13 @@ class Stimulation:
                 data_trace.append([])
 
             #implicit delimiter style found in xdphys 2.47 files
-            if len(lin)==80:
-                inside_trace = True
-            if lin[0:6] == 'depvar':
-                inside_trace = False
-                data_trace.append([])
-            if lin == 'END_RASTERDATA':
-                inside_trace = False
+            #if len(lin)==80 and not inside_stimulus:
+            #    inside_trace = True
+            #if lin[0:6] == 'depvar' and not inside_stimulus:
+            #    inside_trace = False
+            #    data_trace.append([])
+            #if lin == 'END_RASTERDATA':
+            #    inside_trace = False
 
             if lin == 'PARAMS':
                 inside_params = True
