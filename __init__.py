@@ -63,7 +63,11 @@ class Stimulation:
             if inside_stimulus:
                 data_stim[-1].append(lin)
             if lin[0:6] == 'depvar' and len(lin)>16:
-                depvar.append(int(lin[lin.find('=')+1:lin.find('<')]))
+                val =  int(lin[lin.find('=')+1:lin.find('<')])
+                if params['depvar'] == 'gen' and not val == -6666: 
+                    val = int(lin.split(';')[1])
+                depvar.append(val)
+
         self.traces = self._str_list_conv(data_trace)
         self.stim = self._str_list_conv(data_stim)
         self.depvar = np.array(depvar)
@@ -92,6 +96,10 @@ class Stimulation:
             self.freqs[np.where(self.depvar < -6000)] = -6666
         if self.params['depvar'] == 'bf (Hz)':
             self.freqs = self.depvar
+        if self.params['depvar'] == 'gen':
+            self.genfile = True
+        else:
+            self.genfile = False
 
         #parse the timestamp as a python datetime if present
         if 'timestamp' in self.params.keys():
@@ -125,4 +133,7 @@ class Stimulation:
             self.stim = self.stim[ind,:]
         if len(self.traces) == len(self.depvar):
             self.traces = self.traces[ind,:]
-        self.freqs = self.freqs[ind,:]
+        try:
+            self.freqs = self.freqs[ind,:]
+        except:
+            pass
