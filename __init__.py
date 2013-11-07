@@ -3,6 +3,7 @@ import numpy as np
 class Stimulation:
     def __init__(self,fname,depvar_sort=True):
         self.load_data(fname)
+        self.fname = fname
         if depvar_sort:
             self.depvar_sort()
 
@@ -137,3 +138,20 @@ class Stimulation:
             self.freqs = self.freqs[ind,:]
         except:
             pass
+
+    def write_wav(self,fname=None):
+        from scipy.io.wavfile import write
+        if fname is None:
+            fname = self.fname+'.wav'
+
+
+        sound = self.traces
+        sound = np.hstack((sound,np.zeros(sound.shape)))
+        sound = sound.flatten()
+        
+
+        scaled = np.int16(sound/np.max(np.abs(sound)) * 32767)
+        write(fname, self.params['adFc'], scaled)
+        return sound
+
+
