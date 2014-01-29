@@ -21,6 +21,7 @@ class Stimulation:
         inside_params = False
         depvar = []
         params = dict()
+        self.version = lines[0].split(' ')[-1][:-1]
         for lin in lines:
             lin = lin.strip()
             if lin == 'STIMULUS':
@@ -30,21 +31,24 @@ class Stimulation:
                     data_stim.append([])
                 inside_stimulus = False
 
-            #explicit trace delimiter style found in xdphys 2.8.1-1 files
-            if lin == 'TRACE':
-                inside_trace = True
-            if lin == 'END_TRACE':
-                inside_trace = False
-                data_trace.append([])
-
-            #implicit delimiter style found in xdphys 2.47 files
-            #if len(lin)==80 and not inside_stimulus:
-            #    inside_trace = True
-            #if lin[0:6] == 'depvar' and not inside_stimulus:
-            #    inside_trace = False
-            #    data_trace.append([])
-            #if lin == 'END_RASTERDATA':
-            #    inside_trace = False
+            if self.version in ['2.8.1-1']:
+                #explicit trace delimiter style found in xdphys 2.8.1-1 files
+                if lin == 'TRACE':
+                    inside_trace = True
+                if lin == 'END_TRACE':
+                    inside_trace = False
+                    data_trace.append([])
+            elif self.version in ['2.47']:
+                #implicit delimiter style found in xdphys 2.47 files
+                if len(lin)==80 and not inside_stimulus:
+                    inside_trace = True
+                if lin[0:6] == 'depvar' and not inside_stimulus:
+                    inside_trace = False
+                    data_trace.append([])
+                if lin == 'END_RASTERDATA':
+                    inside_trace = False
+            else:
+                raise Exception('unknown xdphys version')
 
             if lin == 'PARAMS':
                 inside_params = True
@@ -65,12 +69,12 @@ class Stimulation:
                 data_stim[-1].append(lin)
             if lin[0:6] == 'depvar' and len(lin)>16:
                 val =  int(lin[lin.find('=')+1:lin.find('<')])
-                if params['depvar'] == 'gen' and not val == -6666: 
+                if params['depvar'] == 'gen' and not val == -6666:
                     val = int(lin.split(';')[1])
                 depvar.append(val)
 
         self.traces = self._str_list_conv(data_trace)
-        self.stim = self._str_list_conv(data_stim)
+        self.stim = self._str_list_conv(data_stim,channel_1_only=False)
         self.depvar = np.array(depvar)
         self.params = params
         if len(self.traces) > 0:
@@ -109,8 +113,7 @@ class Stimulation:
                     self.params['timestamp'])
 
 
-
-    def _str_list_conv(self,str_list):
+    def _str_list_conv(self,str_list,channel_1_only=True):
         def parse(lines):
             nums = []
             for lin in lines:
@@ -119,7 +122,7 @@ class Stimulation:
             return nums
         ret = []
         for tra in str_list:
-            if len(tra)>0 and tra[1] == 'channel=1':
+            if len(tra)>0 and ((not channel_1_only) or (tra[1] == 'channel=1')):
                 ret.append(parse(tra[2:]))
             if len(tra)>0 and len(tra[1])==80:
                 ret.append(parse(tra))
@@ -144,14 +147,10 @@ class Stimulation:
         if fname is None:
             fname = self.fname+'.wav'
 
-
         sound = self.traces
         sound = np.hstack((sound,np.zeros(sound.shape)))
         sound = sound.flatten()
-        
 
         scaled = np.int16(sound/np.max(np.abs(sound)) * 32767)
         write(fname, self.params['adFc'], scaled)
         return sound
-
-
