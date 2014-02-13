@@ -31,7 +31,7 @@ class Stimulation:
                     data_stim.append([])
                 inside_stimulus = False
 
-            if self.version in ['2.8.1-1']:
+            if self.version in ['2.8.1-1','2.8.0-1']:
                 #explicit trace delimiter style found in xdphys 2.8.1-1 files
                 if lin == 'TRACE':
                     inside_trace = True
@@ -103,6 +103,7 @@ class Stimulation:
             self.freqs = self.depvar
         if self.params['depvar'] == 'gen':
             self.genfile = True
+            self.freqs = self.depvar.copy()
         else:
             self.genfile = False
 
