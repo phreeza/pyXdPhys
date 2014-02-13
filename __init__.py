@@ -74,7 +74,7 @@ class Stimulation:
                 depvar.append(val)
 
         self.traces = self._str_list_conv(data_trace)
-        self.stim = self._str_list_conv(data_stim,channel_1_only=False)
+        self.stim = self._str_list_conv(data_stim,channel_1_only=True)
         self.depvar = np.array(depvar)
         self.params = params
         if len(self.traces) > 0:
@@ -155,3 +155,10 @@ class Stimulation:
         scaled = np.int16(sound/np.max(np.abs(sound)) * 32767)
         write(fname, self.params['adFc'], scaled)
         return sound
+
+
+def testme():
+    stim = Stimulation('/groups/kempter/owldata/170/170.07.4.itd',depvar_sort=False)
+
+if __name__ == '__main__':
+    testme()
