@@ -21,7 +21,7 @@ class Stimulation:
         inside_params = False
         depvar = []
         params = dict()
-        self.version = lines[0].split(' ')[-1][:-1]
+        self.version = lines[0].split(' ')[-1][:-1].strip()
         for lin in lines:
             lin = lin.strip()
             if lin == 'STIMULUS':
@@ -31,7 +31,7 @@ class Stimulation:
                     data_stim.append([])
                 inside_stimulus = False
 
-            if self.version in ['2.8.1-1','2.8.0-1']:
+            if self.version in ['2.8.1-1','2.8.0-1','2.8.0-2','2.8.0-3','2.8.0-4','2.8.0-5']:
                 #explicit trace delimiter style found in xdphys 2.8.1-1 files
                 if lin == 'TRACE':
                     inside_trace = True
@@ -48,7 +48,7 @@ class Stimulation:
                 if lin == 'END_RASTERDATA':
                     inside_trace = False
             else:
-                raise Exception('unknown xdphys version')
+                raise Exception('unknown xdphys version '+self.version)
 
             if lin == 'PARAMS':
                 inside_params = True
