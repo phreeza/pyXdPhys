@@ -20,6 +20,7 @@ class Stimulation:
         inside_stimulus = False
         inside_params = False
         depvar = []
+        depvar_full = []
         params = dict()
         self.version = lines[0].split(' ')[-1][:-1].strip()
         for lin in lines:
@@ -71,10 +72,19 @@ class Stimulation:
                 val =  int(lin[lin.find('=')+1:lin.find('<')])
                 if params['depvar'] == 'gen' and not val == -6666:
                     val = int(lin.split(';')[1])
+                    depvar_full.append([
+                        int(lin.split(';')[0].split('<')[1]),
+                        int(lin.split(';')[1]),
+                        int(lin.split(';')[2]),
+                        int(lin.split(';')[3]),
+                        int(lin.split(';')[4])]
+                        )
+                if params['depvar'] == 'gen' and val == -6666:
+                    depvar_full.append([-6666,-6666,-6666,-6666,-6666])
                 depvar.append(val)
 
         self.traces = self._str_list_conv(data_trace)
-        self.stim = self._str_list_conv(data_stim,channel_1_only=True)
+        self.stim = self._str_list_conv(data_stim,channel_1_only=False)
         self.depvar = np.array(depvar)
         self.params = params
         if len(self.traces) > 0:
@@ -104,6 +114,7 @@ class Stimulation:
         if self.params['depvar'] == 'gen':
             self.genfile = True
             self.freqs = self.depvar.copy()
+            self.depvar_full = np.array(depvar_full)
         else:
             self.genfile = False
 
