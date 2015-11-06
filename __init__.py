@@ -138,6 +138,10 @@ class Stimulation:
                 ret.append(parse(tra[2:]))
             if len(tra)>0 and len(tra[1])==80:
                 ret.append(parse(tra))
+        #zero pad last entry in case it is truncated (seems to happen sometimes in genfiles)
+        if len(ret)>0 and len(ret[-1]) < len(ret[-2]):
+          for n in range(len(ret[-2]) - len(ret[-1])):
+            ret[-1].append(2)
         ret = np.array(ret)
         return ret - (ret > 32767)*65536
 
